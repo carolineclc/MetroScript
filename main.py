@@ -306,6 +306,47 @@ class Parser:
             Parser.tokenizer.selectNext()
             resultado = STOP("", [name,speed,rotation])
 
+        elif Parser.tokenizer.next.type == "FINISH":  # caminho do START
+            Parser.tokenizer.selectNext()
+
+            if Parser.tokenizer.next.type != "LP":
+                raise Exception("FALTOU '('")
+            Parser.tokenizer.selectNext()
+            if Parser.tokenizer.next.type != "id":
+                raise Exception('erro')
+            Parser.tokenizer.selectNext()
+            if Parser.tokenizer.next.type != "C":
+                raise Exception("erro")
+            Parser.tokenizer.selectNext()
+            id = Parser.parseRelativeExpression()
+            if Parser.tokenizer.next.type != "COMMA":
+                raise Exception("erro")
+            Parser.tokenizer.selectNext()
+            if Parser.tokenizer.next.type != "station":
+                raise Exception("erro")
+            Parser.tokenizer.selectNext()
+            if Parser.tokenizer.next.type != "C":
+                raise Exception("erro")
+            Parser.tokenizer.selectNext()
+            station = Parser.parseRelativeExpression()
+            if Parser.tokenizer.next.type != "COMMA":
+                raise Exception("erro") 
+            Parser.tokenizer.selectNext()
+            if Parser.tokenizer.next.type != "region":
+                raise Exception("erro")
+            Parser.tokenizer.selectNext()
+            if Parser.tokenizer.next.type != "C":
+                raise Exception("erro")
+            Parser.tokenizer.selectNext()
+            region = Parser.parseRelativeExpression()
+            if Parser.tokenizer.next.type != "RP":
+                raise Exception("erro")
+            Parser.tokenizer.selectNext()
+            if Parser.tokenizer.next.type != "SC":
+                raise Exception("erro")
+            Parser.tokenizer.selectNext()
+            resultado = FINISH("", [id,station,region])
+
         elif Parser.tokenizer.next.type == "printf":  # caminho do Print
             Parser.tokenizer.selectNext()
 
@@ -754,6 +795,17 @@ class STOP(Node):
         print(" - STATION NAME: " + self.children[0].value)
         print(" - TRAIN SPEED: " + str(val_speed))
         print(" - WHEEL ROTATION: " + str(val_rotation))
+        print("---------------------------------------------")
+
+class FINISH(Node):
+    def __init__(self, value, children):
+        super().__init__(value, children)
+
+    def Evaluate(self):
+        print("------------- FINISHING track ----------------")
+        print(" - Train ID: " + self.children[0].value)
+        print(" - Station: " + self.children[1].value)
+        print(" - Region: " + self.children[2].value)
         print("---------------------------------------------")
 
 class If(Node):
