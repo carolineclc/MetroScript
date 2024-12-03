@@ -14,7 +14,7 @@ class Tokenizer:
         self.next = None
 
     def selectNext(self):
-        palavras_reservadas = ["printf", "if", "while", "scanf", "else", "int", "str", "bool", "STOP", "name", "id", "station", "speed", "region", "rotation", "START","FINISH"]
+        palavras_reservadas = ["printf", "if", "while", "scanf", "else", "int", "str","float", "bool", "STOP", "name", "id", "station", "speed", "region", "rotation", "START","FINISH"]
 
         while (self.position < len(self.source)) and (self.source[self.position] == " " or self.source[self.position] == "\n"):
             self.position += 1
@@ -53,7 +53,18 @@ class Tokenizer:
                 while len(self.source) > self.position and self.source[self.position].isdigit():
                     value += self.source[self.position]
                     self.position += 1
-                value = int(value)
+                if self.position < len(self.source) and self.source[self.position] == '.':
+                    value += self.source[self.position]
+                    type = 'FLOAT'
+                    self.position += 1
+                    while len(self.source) > self.position and self.source[self.position].isdigit():
+                        value += self.source[self.position]
+                        self.position += 1
+                    value = float(value)
+                    
+                else:
+                    type = 'INT'
+                    value = int(value)
 
             elif self.source[self.position] == "+":
                 type = "PLUS"
@@ -176,7 +187,7 @@ class Parser:
             resultado = NoOp("", "")
 
         
-        elif Parser.tokenizer.next.type in ["int", "str", "bool"]:  # caminho do tipo
+        elif Parser.tokenizer.next.type in ["int", "str", "bool","float"]:  # caminho do tipo
             var_type = Parser.tokenizer.next.type
             Parser.tokenizer.selectNext()
 
@@ -479,6 +490,10 @@ class Parser:
             resultado = IntVal(Parser.tokenizer.next.value, [])
             Parser.tokenizer.selectNext()
 
+        elif Parser.tokenizer.next.type == "FLOAT":
+            resultado = FloatVal(Parser.tokenizer.next.value, [])
+            Parser.tokenizer.selectNext()
+
         elif Parser.tokenizer.next.type == "STRING":
             resultado = StringVal(Parser.tokenizer.next.value, [])
             Parser.tokenizer.selectNext()
@@ -599,18 +614,24 @@ class BinOp(Node):  # Binary Operation. Contem dois filhos
                 return str(val_f1) + str(val_f2), 'str'
             elif type_f1 == 'int' and type_f2 == 'int':
                 return val_f1 + val_f2, 'int'
+            elif type_f1 == 'float' and type_f2 == 'float':
+                return val_f1 + val_f2, 'float'
             else:
                 raise Exception(f"Type mismatch: Add operation requires 'int', 'bool', or 'str' operands, got '{type_f1}' and '{type_f2}'")
 
         elif self.value == "-":
             if type_f1 == 'int' and type_f2 == 'int':
                 return val_f1 - val_f2, 'int'
+            elif type_f1 == 'float' and type_f2 == 'float':
+                return val_f1 - val_f2, 'float'
             else:
                 raise Exception(f"Type mismatch: Sub operation requires 'int' or 'bool' operands, got '{type_f1}' and '{type_f2}'")
 
         elif self.value == "*":
             if type_f1 == 'int' and type_f2 == 'int':
                 return val_f1 * val_f2, 'int'
+            elif type_f1 == 'float' and type_f2 == 'float':
+                return val_f1 * val_f2, 'float'
             else:
                 raise Exception(f"Type mismatch: Mul operation requires 'int' or 'bool' operands, got '{type_f1}' and '{type_f2}'")
 
@@ -619,6 +640,8 @@ class BinOp(Node):  # Binary Operation. Contem dois filhos
                 if val_f2 == 0:
                     raise Exception("Division by zero")
                 return val_f1 // val_f2, 'int'
+            elif type_f1 == 'float' and type_f2 == 'float':
+                return val_f1 // val_f2, 'float'
             else:
                 raise Exception(f"Type mismatch: Div operation requires 'int' or 'bool' operands, got '{type_f1}' and '{type_f2}'")
 
@@ -641,13 +664,13 @@ class BinOp(Node):  # Binary Operation. Contem dois filhos
                 raise Exception(f"Type mismatch: Less than operation requires operands of the same type, got '{type_f1}' and '{type_f2}'")
 
         elif self.value == "&&":
-            if type_f1 == 'int' and type_f2 == 'int':
+            if type_f1 == ('int'or"float") and type_f2 == ('int' or "float"):
                 return int(bool(val_f1) and bool(val_f2)), 'bool'
             else:
                 raise Exception(f"Type mismatch: And operation requires 'int' or 'bool' operands, got '{type_f1}' and '{type_f2}'")
 
         elif self.value == "||":
-            if type_f1 == 'int' and type_f2 == 'int':
+            if type_f1 == ('int'or"float")and type_f2 == ('int'or"float"):
                 return int(bool(val_f1) or bool(val_f2)), 'bool'
             else:
                 raise Exception(f"Type mismatch: Or operation requires 'int' or 'bool' operands, got '{type_f1}' and '{type_f2}'")
@@ -671,11 +694,15 @@ class UnOp(Node):  # Unary Operation. Contem um filho
         if self.value == "-":
             if type_val == 'int':
                 return -val, 'int'
+            if type_val == 'float':
+                return -val, 'float'
             else:
                 raise Exception(f"Type mismatch: Unary minus operation requires 'int' or 'bool' operand, got '{type_val}'")
         
         elif self.value == "!":
             if type_val == 'int':
+                return int(not bool(val)), 'bool'
+            if type_val == 'float':
                 return int(not bool(val)), 'bool'
             else:
                 raise Exception(f"Type mismatch: Not operation requires 'int' or 'bool' operand, got '{type_val}'")
@@ -690,6 +717,13 @@ class IntVal(Node):  # Integer value. Não contem filhos
 
     def Evaluate(self):
         return self.value, 'int'  # Retorna o valor e o tipo
+    
+class FloatVal(Node):  # Integer value. Não contem filhos
+    def __init__(self, value, children):
+        super().__init__(value, children)
+
+    def Evaluate(self):
+        return self.value, 'float'  # Retorna o valor e o tipo
 
 class StringVal(Node):
     def __init__(self, value, children):
@@ -723,7 +757,7 @@ class Assignment(Node):
         value, value_type = self.children[1].Evaluate()
         if identifier in SymbolTable.table:
             var_type = SymbolTable.table[identifier][1]
-            if (var_type == value_type) or (var_type in ['int', 'bool'] and value_type in ['int', 'bool']):
+            if (var_type == value_type) or (var_type in ['int', 'bool',"float"] and value_type in ['int', 'bool',"float"]):
                 SymbolTable.table[identifier][0] = value  # Atualiza o valor da variável na tabela de símbolos
             else:
                 raise Exception(f"Type mismatch: Variable '{identifier}' is of type '{var_type}' but got '{value_type}'")
@@ -828,6 +862,8 @@ class VarDec(Node):
         for child in self.children[:-1]:  # Itera sobre todos os filhos, exceto o último (bloco de assignments)
             if var_type == 'int':
                 initial_value = 0
+            elif var_type == 'float':
+                initial_value = 0.0
             elif var_type == 'str':
                 initial_value = ""
             elif var_type == 'bool':
