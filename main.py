@@ -15,7 +15,7 @@ class Tokenizer:
         self.next = None
 
     def selectNext(self):
-        palavras_reservadas = ["printf","BREAK", "if","sqrt", "while", "scanf", "else", "int", "str","float", "bool", "STOP", "name", "id", "station", "speed", "region", "rotation", "START","FINISH"]
+        palavras_reservadas = ["printlog","BREAK", "if","sqrt", "sin","cos","tan","log","exp","pow","while", "scanf", "else", "int", "str","float", "bool", "STOP", "name", "id", "station", "speed", "region", "rotation", "START","FINISH"]
 
         while (self.position < len(self.source)) and (self.source[self.position] == " " or self.source[self.position] == "\n"):
             self.position += 1
@@ -44,7 +44,7 @@ class Tokenizer:
 
                 # verifica palavras reservadas ao invés de strings
                 if value in palavras_reservadas:
-                    type = value  # os types serão: printf, if, while, scanf, else, int, str, bool
+                    type = value  # os types serão: printlog, if, while, scanf, else, int, str, bool
 
                 else:
                     type = "ID"
@@ -371,7 +371,7 @@ class Parser:
             Parser.tokenizer.selectNext()
             resultado = FINISH("", [id,station,region])
 
-        elif Parser.tokenizer.next.type == "printf":  # caminho do Print
+        elif Parser.tokenizer.next.type == "printlog":  # caminho do Print
             Parser.tokenizer.selectNext()
 
             if Parser.tokenizer.next.type == "LP":
@@ -545,8 +545,78 @@ class Parser:
             else:
                 raise Exception("FALTOU '('")
             
+        elif Parser.tokenizer.next.type == "sin":
+            Parser.tokenizer.selectNext()
+            if Parser.tokenizer.next.type == "LP":
+                Parser.tokenizer.selectNext()
+                resultado = MathFunc("sin", [Parser.parseExpression()])
+                if Parser.tokenizer.next.type == "RP":
+                    Parser.tokenizer.selectNext()
+                else:
+                    raise Exception("FALTOU ')'")
+            else:
+                raise Exception("FALTOU '('")
+            
+        elif Parser.tokenizer.next.type == "cos":
+            Parser.tokenizer.selectNext()
+            if Parser.tokenizer.next.type == "LP":
+                Parser.tokenizer.selectNext()
+                resultado = MathFunc("cos", [Parser.parseExpression()])
+                if Parser.tokenizer.next.type == "RP":
+                    Parser.tokenizer.selectNext()
+                else:
+                    raise Exception("FALTOU ')'")
+            else:
+                raise Exception("FALTOU '('")       
 
-        
+        elif Parser.tokenizer.next.type == "tan":
+            Parser.tokenizer.selectNext()
+            if Parser.tokenizer.next.type == "LP":
+                Parser.tokenizer.selectNext()
+                resultado = MathFunc("tan", [Parser.parseExpression()])
+                if Parser.tokenizer.next.type == "RP":
+                    Parser.tokenizer.selectNext()
+                else:
+                    raise Exception("FALTOU ')'")
+            else:
+                raise Exception("FALTOU '('")
+            
+        elif Parser.tokenizer.next.type == "log":
+            Parser.tokenizer.selectNext()
+            if Parser.tokenizer.next.type == "LP":
+                Parser.tokenizer.selectNext()
+                resultado = MathFunc("log", [Parser.parseExpression()])
+                if Parser.tokenizer.next.type == "RP":
+                    Parser.tokenizer.selectNext()
+                else:
+                    raise Exception("FALTOU ')'")
+            else:
+                raise Exception("FALTOU '('")
+            
+        elif Parser.tokenizer.next.type == "exp":
+            Parser.tokenizer.selectNext()
+            if Parser.tokenizer.next.type == "LP":
+                Parser.tokenizer.selectNext()
+                resultado = MathFunc("exp", [Parser.parseExpression()])
+                if Parser.tokenizer.next.type == "RP":
+                    Parser.tokenizer.selectNext()
+                else:
+                    raise Exception("FALTOU ')'")
+            else:
+                raise Exception("FALTOU '('")
+            
+        elif Parser.tokenizer.next.type == "pow":
+            Parser.tokenizer.selectNext()
+            if Parser.tokenizer.next.type == "LP":
+                Parser.tokenizer.selectNext()
+                resultado = MathFunc("pow", [Parser.parseExpression()])
+                if Parser.tokenizer.next.type == "RP":
+                    Parser.tokenizer.selectNext()
+                else:
+                    raise Exception("FALTOU ')'")
+            else:
+                raise Exception("FALTOU '('")
+            
 
         elif Parser.tokenizer.next.type == "scanf":
             Parser.tokenizer.selectNext()
@@ -914,9 +984,23 @@ class MathFunc(Node):
     def Evaluate(self):
         if self.value == "sqrt":
             val,type= self.children[0].Evaluate()
-
             return float(math.sqrt(val)), 'float'
             
+        elif self.value == "sin":
+            val,type= self.children[0].Evaluate()
+            return float(math.sin(val)), 'float'
+        elif self.value == "cos":
+            val,type= self.children[0].Evaluate()
+            return float(math.cos(val)), 'float'
+        elif self.value == "tan":
+            val,type= self.children[0].Evaluate()
+            return float(math.tan(val)), 'float'
+        elif self.value == "log":
+            val,type= self.children[0].Evaluate()
+            return float(math.log(val)), 'float'
+        elif self.value == "exp":
+            val,type= self.children[0].Evaluate()
+            return float(math.exp(val)), 'float'
 
 
 class SymbolTable:
