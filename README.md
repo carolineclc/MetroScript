@@ -1,17 +1,22 @@
 # MetroScript
 
-## Introducao
+## Introdução
 A Linguagem MetroScript foi desenvolvida com o objetivo de facilitar a criação e execução de rotas e instruções para trens de metro. Ela oferece uma sintaxe simples e intuitiva, permitindo que usuarios definam trens, suas rotas, suas paradas e outras aplicações como velocidade e rotação de rodas para os trens.
 
 ## Desenvolvedor
 Caroline Chaim de Lima Carneiro
 
 ## Como executar
-python main.py
+python main.py [arquivos de teste]
 
 ### Arquivo de teste
-teste.m
+exemplo1.m
 
+exemplo2.m
+
+exemplo3.m
+
+exemplo4.m
 ## EBNF
 
 ``` lua
