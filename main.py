@@ -1,4 +1,5 @@
 import sys
+import math
 
 
 class Token:
@@ -14,7 +15,7 @@ class Tokenizer:
         self.next = None
 
     def selectNext(self):
-        palavras_reservadas = ["printf", "if", "while", "scanf", "else", "int", "str","float", "bool", "STOP", "name", "id", "station", "speed", "region", "rotation", "START","FINISH"]
+        palavras_reservadas = ["printf","BREAK", "if","sqrt", "while", "scanf", "else", "int", "str","float", "bool", "STOP", "name", "id", "station", "speed", "region", "rotation", "START","FINISH"]
 
         while (self.position < len(self.source)) and (self.source[self.position] == " " or self.source[self.position] == "\n"):
             self.position += 1
@@ -188,6 +189,11 @@ class Parser:
         if Parser.tokenizer.next.type == "SC":  # caminho do semicolon
             Parser.tokenizer.selectNext()
             resultado = NoOp("", "")
+
+        elif Parser.tokenizer.next.type == "BREAK":
+            Parser.tokenizer.selectNext()
+            print("break")
+            return NoOp("", "")
 
         
         elif Parser.tokenizer.next.type in ["int", "str", "bool","float"]:  # caminho do tipo
@@ -526,6 +532,18 @@ class Parser:
 
             else:
                 raise Exception("FALTOU ')'")
+            
+        elif Parser.tokenizer.next.type == "sqrt":
+            Parser.tokenizer.selectNext()
+            if Parser.tokenizer.next.type == "LP":
+                Parser.tokenizer.selectNext()
+                resultado = MathFunc("sqrt", [Parser.parseExpression()])
+                if Parser.tokenizer.next.type == "RP":
+                    Parser.tokenizer.selectNext()
+                else:
+                    raise Exception("FALTOU ')'")
+            else:
+                raise Exception("FALTOU '('")
             
 
         
@@ -888,6 +906,17 @@ class VarDec(Node):
                 raise Exception(f"Unsupported type '{var_type}'")
             SymbolTable.set_table(child.value, initial_value, var_type)  # Declara as variáveis com valor inicial e tipo especificado
         self.children[-1].Evaluate()  # Evaluate no bloco de assignments
+
+class MathFunc(Node):
+    def __init__(self, value, children):
+        super().__init__(value, children)
+
+    def Evaluate(self):
+        if self.value == "sqrt":
+            val,type= self.children[0].Evaluate()
+
+            return float(math.sqrt(val)), 'float'
+            
 
 
 class SymbolTable:
