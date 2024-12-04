@@ -15,7 +15,7 @@ class Tokenizer:
         self.next = None
 
     def selectNext(self):
-        palavras_reservadas = ["printlog","BREAK", "if","sqrt", "sin","cos","tan","log","exp","pow","while", "scanf", "else", "int", "str","float", "bool", "STOP", "name", "id", "station", "speed", "region", "rotation", "START","FINISH"]
+        palavras_reservadas = ["printlog","BREAK", "if","sqrt", "sin","cos","tan","log","exp","pow","pi","while", "scanf", "else", "int", "str","float", "bool", "STOP", "name", "id", "station", "speed", "region", "rotation", "START","FINISH"]
 
         while (self.position < len(self.source)) and (self.source[self.position] == " " or self.source[self.position] == "\n"):
             self.position += 1
@@ -618,6 +618,18 @@ class Parser:
                 raise Exception("FALTOU '('")
             
 
+        elif Parser.tokenizer.next.type == "pi":
+            Parser.tokenizer.selectNext()
+            if Parser.tokenizer.next.type == "LP":
+                Parser.tokenizer.selectNext()
+                resultado = MathFunc("pi", [])
+                if Parser.tokenizer.next.type == "RP":
+                    Parser.tokenizer.selectNext()
+                else:
+                    raise Exception("FALTOU ')'")
+            else:
+                raise Exception("FALTOU '('")          
+
         elif Parser.tokenizer.next.type == "scanf":
             Parser.tokenizer.selectNext()
             resultado = Read('', [])
@@ -1002,7 +1014,8 @@ class MathFunc(Node):
             val,type= self.children[0].Evaluate()
             return float(math.exp(val)), 'float'
 
-
+        elif self.value == "pi":
+            return float(math.pi), 'float'
 class SymbolTable:
     table = dict()
 
