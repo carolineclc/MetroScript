@@ -104,6 +104,9 @@ class Tokenizer:
                 if self.source[self.position] == "=":
                     type = "EQUAL"
                     self.position += 1
+                elif self.source[self.position] == ">":
+                    type = "ARROW"
+                    self.position += 1
 
             elif self.source[self.position] == ";":
                 type = "SC"  # semicolon
@@ -195,22 +198,26 @@ class Parser:
             assignments = []
 
             while True:
-                if Parser.tokenizer.next.type == "ID":
-                    identifier = Identifier(Parser.tokenizer.next.value, [])
-                    declarations.append(identifier)
+                if Parser.tokenizer.next.type == "ARROW":
                     Parser.tokenizer.selectNext()
-
-                    if Parser.tokenizer.next.type == "ASSIGNMENT":
+                    if Parser.tokenizer.next.type == "ID":
+                        identifier = Identifier(Parser.tokenizer.next.value, [])
+                        declarations.append(identifier)
                         Parser.tokenizer.selectNext()
-                        expression = Parser.parseExpression()
-                        assignments.append(Assignment("", [identifier, expression]))
 
-                    if Parser.tokenizer.next.type == "COMMA":
-                        Parser.tokenizer.selectNext()
+                        if Parser.tokenizer.next.type == "ASSIGNMENT":
+                            Parser.tokenizer.selectNext()
+                            expression = Parser.parseExpression()
+                            assignments.append(Assignment("", [identifier, expression]))
+
+                        if Parser.tokenizer.next.type == "COMMA":
+                            Parser.tokenizer.selectNext()
+                        else:
+                            break
                     else:
-                        break
+                        raise Exception("TOKEN INVÁLIDO")
                 else:
-                    raise Exception("TOKEN INVÁLIDO")
+                    raise Exception("FALTOU ARROW")
 
             resultado = VarDec(var_type, declarations + [Block("", assignments)])
 
@@ -771,6 +778,15 @@ class Identifier(Node):
     def Evaluate(self):
         if self.value in SymbolTable.table:
             value, var_type = SymbolTable.table[self.value]
+            if var_type == "str":
+                n_type = str
+            elif var_type == "int":
+                n_type = int
+            elif var_type == "float":
+                n_type = float
+            if type(value) is not n_type:
+                raise Exception(f"Type mismatch: Variable '{self.value}' is of type '{var_type}' but got '{type(value)}'")
+            
             return value, var_type  # Retorna o valor e o tipo da variável
         else:
             raise Exception(f"Variable '{self.value}' not declared")
