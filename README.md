@@ -33,7 +33,7 @@ IF = "if","(", RELEXP,")",BLOCK,["else",BLOCK], ";";
 
 MATH_FUNC = MATHFUNC_N, "(", RELEXP, ")", ";";
 
-MATH_FUNC_N = "sqrt" |"sin" | "cos" | "tan"| "log" | "exp" | "pow";
+MATH_FUNC_N = "sqrt" |"sin" | "cos" | "tan"| "log" | "exp" | "pow" | "pi";
 
 START = "START","(","id",":", IDENTIFIER , "," , "station", ":" , IDENTIFIER , ",", "region" , IDENTIFIER, ")",";";
 
@@ -101,4 +101,52 @@ STOP (name : "Pinheiros", speed: init_speed, rotation: 100);
 }
 ```
 
+## Exemplo 3: Alterando a rotação da roda
+O seguinte exemplo demonstra como que o programa consegue alterar a velocidade da rotacao da roda dependendo do seu diametro. E como essa rotacao influencia na velocidade do trem dentro de um trecho do percurso.
 
+``` lua
+{
+
+float => diameter;
+float => radius;
+float => circumferance;
+int => km = 1;
+float => rpm;
+
+
+diameter = 4.0;
+radius = diameter * 2.0;
+circumferance = pi() * diameter;
+
+float => init_speed = 0.0;
+float => target_speed = 50.0;
+float => time = 0.0;
+float => aceletation = 3.5;
+float => time_to_reach_target_speed = (target_speed - init_speed) / aceletation;
+
+
+START (id : "abc_123", station : "Santa Rosa", region : "Norte");
+while (time < time_to_reach_target_speed ) {
+
+    init_speed = init_speed + aceletation;
+    time = time + 1.0;
+    rpm = init_speed * 60.0 / circumferance;
+    STOP (name : "GOING TO Pinheiros", speed: init_speed, rotation: rpm);
+    }
+}
+
+```
+
+## Exemplo 4: Fazendo uso dos simbolos matematicos
+``` lua
+{
+printlog(sqrt(2.0));
+printlog(sin(90));
+printlog(cos(60));
+printlog(tan(45));
+printlog(log(1.3));
+printlog(exp(5));
+printlog(pi());
+}
+
+```
